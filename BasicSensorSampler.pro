@@ -34,7 +34,8 @@ SOURCES += \
         api/iconhelper.cpp \
         usercontrol/frminputbox.cpp \
         usercontrol/frmmessagebox.cpp \
-    relaychannel.cpp
+    relaychannel.cpp \
+    chnlstatus.cpp
 
 HEADERS += \
         bssamplerwidget.h \
@@ -45,7 +46,8 @@ HEADERS += \
         api/myhelper.h \
         usercontrol/frminputbox.h \
         usercontrol/frmmessagebox.h \
-    relaychannel.h
+    relaychannel.h \
+    chnlstatus.h
 
 FORMS += \
         bssamplerwidget.ui \

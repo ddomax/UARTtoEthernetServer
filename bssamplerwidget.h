@@ -10,6 +10,7 @@
 #include <QTcpServer>
 #include <QMap>
 #include <QDialog>
+#include <relaychannel.h>
 
 namespace Ui {
 class BSSamplerWidget;
@@ -32,6 +33,7 @@ private slots:
     void on_clearButton_clicked();
     void on_sendButton_clicked();
     void on_openButton_clicked();
+    void on_closeButton_clicked();
     void Read_Data();
     void Read_Line();
     void on_refreshButton_clicked();
@@ -46,12 +48,16 @@ private slots:
 
     void on_btnMenu_Max_clicked();
     void on_cboxStyle_currentIndexChanged(const QString &text);
+    void on_channelBox_currentIndexChanged();
 
 private:
+    const static int MAX_CHNL_NUM = 4;
     Ui::BSSamplerWidget *ui;
     QSerialPort *serial;
     QClipboard *board;
     QTcpSocket *m_client;
+    RelayChannel *relayChannelPool[MAX_CHNL_NUM] = {NULL};
+    int activeChannelIndex = 0;
     QTimer dataTimer;
     QTimer captureTimer;
     const static int RECORD_DATA_LEN = 8;
@@ -65,6 +71,8 @@ private:
     void setup_CustomPlot();
     double data_average();
     void findtarget();
+    void enableSettings();
+    void disableSettings();
     int screencount;
     bool ishide = false;
 

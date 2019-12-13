@@ -10,7 +10,7 @@ BSSamplerWidget::BSSamplerWidget(QWidget *parent) :
     setup_CustomPlot();
 
     board = QApplication::clipboard();
-    connect(board, SIGNAL(dataChanged()), this, SLOT(clipboard_changed()));
+//    connect(board, SIGNAL(dataChanged()), this, SLOT(clipboard_changed()));
 
     for(int i=0;i<RECORD_DATA_LEN;i++)
         data_record[i] = 0;
@@ -30,6 +30,14 @@ BSSamplerWidget::BSSamplerWidget(QWidget *parent) :
     QStringList stopbits;
     stopbits<<"1"<<"2";
     ui->StopBox->insertItems(1,stopbits);
+
+    QStringList channelindex;
+    channelindex<<"1"<<"2"<<"3"<<"4";
+    ui->channelBox->addItems(channelindex);
+
+    QStringList opmodetext;
+    opmodetext<<"TCPClient"<<"TCPServer"<<"UDP";
+    ui->opmodeBox->addItems(opmodetext);
 
     refresh_serialPorts();
     //设置波特率下拉菜单默认显示第三项
@@ -318,68 +326,113 @@ void BSSamplerWidget::Read_Line()
     }
 }
 
+void BSSamplerWidget::on_channelBox_currentIndexChanged()
+{
+    activeChannelIndex = ui->channelBox->currentIndex();
+    if(relayChannelPool[activeChannelIndex]==NULL)
+    {
+        enableSettings();
+        qDebug() << QString("Current channel is closed!No refresh is needed");
+        return;
+    }
+    RelayChannel *m_relayChannel = relayChannelPool[activeChannelIndex];
+    ui->PortBox->setCurrentIndex(m_relayChannel->chnlStatus.portBoxIndex);
+    ui->BaudBox->setCurrentIndex(m_relayChannel->chnlStatus.BaudBoxIndex);
+    ui->opmodeBox->setCurrentIndex(m_relayChannel->chnlStatus.currentOpmode);
+    disableSettings();
+}
+
 void BSSamplerWidget::on_openButton_clicked()
 {
-    if(ui->openButton->text()==tr("打开串口"))
+    if(relayChannelPool[activeChannelIndex]!=NULL)
     {
-        serial = new QSerialPort;
-        //设置串口名
-        serial->setPortName(ui->PortBox->currentText());
-        //设置波特率
-        serial->setBaudRate(ui->BaudBox->currentText().toInt());
-        //设置数据位数
-        switch(ui->BitNumBox->currentIndex())
-        {
-        case 8: serial->setDataBits(QSerialPort::Data8); break;
-        default: break;
-        }
-        //设置奇偶校验
-        switch(ui->ParityBox->currentIndex())
-        {
-        case 0: serial->setParity(QSerialPort::NoParity); break;
-        default: break;
-        }
-        //设置停止位
-        switch(ui->StopBox->currentIndex())
-        {
-        case 1: serial->setStopBits(QSerialPort::OneStop); break;
-        case 2: serial->setStopBits(QSerialPort::TwoStop); break;
-        default: break;
-        }
-        //设置流控制
-        serial->setFlowControl(QSerialPort::NoFlowControl);
-        //打开串口
-        if(!serial->open(QIODevice::ReadWrite)){
-            qDebug() << tr("串口打开失败！");
-            return;
-        }
-        //关闭设置菜单使能
-        ui->PortBox->setEnabled(false);
-        ui->BaudBox->setEnabled(false);
-        ui->BitNumBox->setEnabled(false);
-        ui->ParityBox->setEnabled(false);
-        ui->StopBox->setEnabled(false);
-        ui->openButton->setText(tr("关闭串口"));
-        ui->sendButton->setEnabled(true);
-        //连接信号槽
-//        QObject::connect(serial, &QSerialPort::readyRead, this, &BSSamplerWidget::Read_Line);
-//        QObject::connect(serial, &QSerialPort::readyRead, this, &BSSamplerWidget::Read_Data);
+        qDebug() << QString("Channel already exists!");
+        return;
     }
-    else
+    relayChannelPool[activeChannelIndex] = new RelayChannel();
+    RelayChannel *m_relayChannel = relayChannelPool[activeChannelIndex];
+    if(m_relayChannel->serial == NULL)
     {
-        //关闭串口
-        serial->clear();
-        serial->close();
-        serial->deleteLater();
-        //恢复设置使能
-        ui->PortBox->setEnabled(true);
-        ui->BaudBox->setEnabled(true);
-        ui->BitNumBox->setEnabled(true);
-        ui->ParityBox->setEnabled(true);
-        ui->StopBox->setEnabled(true);
-        ui->openButton->setText(tr("打开串口"));
-        ui->sendButton->setEnabled(false);
+        qDebug() << QString("Serial object creation failed!");
+        return;
     }
+    //设置串口名
+    m_relayChannel->serial->setPortName(ui->PortBox->currentText());
+    m_relayChannel->chnlStatus.portBoxIndex = ui->PortBox->currentIndex();
+    //设置波特率
+    m_relayChannel->serial->setBaudRate(ui->BaudBox->currentText().toInt());
+    m_relayChannel->chnlStatus.BaudBoxIndex = ui->BaudBox->currentIndex();
+    //设置数据位数
+    switch(ui->BitNumBox->currentIndex())
+    {
+    case 8: m_relayChannel->serial->setDataBits(QSerialPort::Data8); break;
+    default: break;
+    }
+    //设置奇偶校验
+    switch(ui->ParityBox->currentIndex())
+    {
+    case 0: m_relayChannel->serial->setParity(QSerialPort::NoParity); break;
+    default: break;
+    }
+    //设置停止位
+    switch(ui->StopBox->currentIndex())
+    {
+    case 1: m_relayChannel->serial->setStopBits(QSerialPort::OneStop); break;
+    case 2: m_relayChannel->serial->setStopBits(QSerialPort::TwoStop); break;
+    default: break;
+    }
+    //设置流控制
+    m_relayChannel->serial->setFlowControl(QSerialPort::NoFlowControl);
+    //Set Ethernet protocol mode
+    m_relayChannel->chnlStatus.currentOpmode = static_cast<MRelayChannel::opmode_t>(ui->opmodeBox->currentIndex());
+    m_relayChannel->chnlStatus.remoteAddress = ui->remoteAddressEdit->text();
+    m_relayChannel->chnlStatus.remotePortNum = ui->remotePortEdit->text().toInt();
+    m_relayChannel->chnlStatus.localAddress = ui->localAddressEdit->text();
+    m_relayChannel->chnlStatus.localPortNum = ui->localPortEdit->text().toInt();
+    //打开Channel
+    m_relayChannel->openChannel();
+    if(m_relayChannel->chnlStatus.currentLinkStatus == MRelayChannel::CLOSED)
+    {
+        qDebug() << QString("Channel Open Failed! DeleteLater");
+        relayChannelPool[activeChannelIndex]->deleteLater();
+        relayChannelPool[activeChannelIndex] = NULL;
+        return;
+    }
+    //关闭设置菜单使能
+    disableSettings();
+    //连接信号槽
+//    QObject::connect(serial, &QSerialPort::readyRead, this, &BSSamplerWidget::Read_Line);
+//    QObject::connect(serial, &QSerialPort::readyRead, this, &BSSamplerWidget::Read_Data);
+
+}
+
+void BSSamplerWidget::on_closeButton_clicked()
+{
+    relayChannelPool[activeChannelIndex]->deleteLater();
+    relayChannelPool[activeChannelIndex] = NULL;
+    enableSettings();
+}
+
+void BSSamplerWidget::enableSettings()
+{
+    //恢复设置使能
+    ui->PortBox->setEnabled(true);
+    ui->BaudBox->setEnabled(true);
+    ui->BitNumBox->setEnabled(true);
+    ui->ParityBox->setEnabled(true);
+    ui->StopBox->setEnabled(true);
+    ui->sendButton->setEnabled(false);
+}
+
+void BSSamplerWidget::disableSettings()
+{
+    //关闭设置菜单使能
+    ui->PortBox->setEnabled(false);
+    ui->BaudBox->setEnabled(false);
+    ui->BitNumBox->setEnabled(false);
+    ui->ParityBox->setEnabled(false);
+    ui->StopBox->setEnabled(false);
+    ui->sendButton->setEnabled(true);
 }
 
 void BSSamplerWidget::on_refreshButton_clicked()
