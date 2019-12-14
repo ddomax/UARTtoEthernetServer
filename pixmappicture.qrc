@@ -1,5 +1,6 @@
 <RCC>
     <qresource prefix="/">
         <file>HNSDFZ.jpg</file>
+        <file>UESTC.jpg</file>
     </qresource>
 </RCC>

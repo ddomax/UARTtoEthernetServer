@@ -45,7 +45,7 @@ BSSamplerWidget::BSSamplerWidget(QWidget *parent) :
     //设置波特率下拉菜单默认显示第三项
     ui->BaudBox->setCurrentIndex(2);
     //关闭发送按钮的使能
-    ui->sendButton->setEnabled(false);
+//    ui->sendButton->setEnabled(false);
 
     //   setWindowFlags(Qt::FramelessWindowHint | Qt::WindowSystemMenuHint | Qt::WindowStaysOnTopHint);
 
@@ -55,7 +55,7 @@ BSSamplerWidget::BSSamplerWidget(QWidget *parent) :
     screencount = QApplication::desktop()->screenCount();
     QRect screen1;
     screen1 = QApplication::desktop()->screenGeometry(screencount-1);
-    this->setGeometry(screen1.x(),screen1.y(),1024,800);
+    this->setGeometry(screen1.x(),screen1.y(),800,1024);
     qDebug() << QString("界面设定成功！");
     qDebug() << QString("%1 %2 %3 %4").arg(screen1.x())
                                 .arg(screen1.y())
@@ -96,7 +96,8 @@ void BSSamplerWidget::initStyle()
     IconHelper::getInstance()->setIcon(ui->btnMenu_Min, QChar(0xf068));
 //    IconHelper::getInstance()->setIcon(ui->lab_Ico, QChar(0xf015));
     QImage* img=new QImage;
-    img->load(":/HNSDFZ.jpg");
+//    img->load(":/HNSDFZ.jpg");
+    img->load(":/UESTC.jpg");
     QImage scaled_img =  img->scaled(ui->lab_Ico->height(),ui->lab_Ico->height(),Qt::IgnoreAspectRatio);
 //    QImage scaled_img = img->scaled(32,32,Qt::IgnoreAspectRatio);
     ui->lab_Ico->setPixmap(QPixmap::fromImage(scaled_img));
@@ -130,7 +131,7 @@ void BSSamplerWidget::initForm()
     ui->cboxStyle->addItems(qssName);
 
     myHelper::sleep(300);
-    ui->cboxStyle->setCurrentIndex(3);
+    ui->cboxStyle->setCurrentIndex(7);
 }
 
 void BSSamplerWidget::on_btnMenu_Max_clicked()
@@ -178,8 +179,8 @@ void BSSamplerWidget::setup_CustomPlot()
     ui->customPlot->axisRect()->setupFullAxesBox();
     ui->customPlot->yAxis->setRange(0, 60);
 
-    ui->customPlot->xAxis->setLabel("时间（s）");
-    ui->customPlot->yAxis->setLabel("速率（Bytes/s）");
+    ui->customPlot->xAxis->setLabel("Time(s)");
+    ui->customPlot->yAxis->setLabel("Speed(B/s)");
 
     ui->customPlot->xAxis->setLabelFont(QFont(QFont().family(), 12));
     ui->customPlot->yAxis->setLabelFont(QFont(QFont().family(), 12));
@@ -219,14 +220,14 @@ void BSSamplerWidget::refresh_serialPorts()
 //清空接收窗口
 void BSSamplerWidget::on_clearButton_clicked()
 {
-    ui->textEdit->clear();
+//    ui->textEdit->clear();
     ui->customPlot->graph(0)->data().data()->clear();
 //    ui->customPlot->graph(1)->data().data()->clear();
 }
 //发送数据
 void BSSamplerWidget::on_sendButton_clicked()
 {
-    serial->write(ui->textEdit_2->toPlainText().toLatin1());
+//    serial->write(ui->textEdit_2->toPlainText().toLatin1());
 }
 //读取接收到的数据
 void BSSamplerWidget::Read_Data()
@@ -239,7 +240,7 @@ void BSSamplerWidget::Read_Data()
 //        str+=tr(buf);
 //        ui->textEdit->clear();
 //        ui->textEdit->append(str);
-        ui->textEdit->insertPlainText(buf);
+//        ui->textEdit->insertPlainText(buf);
 //        ui->textEdit->append(buf);
     }
     buf.clear();
@@ -382,7 +383,7 @@ void BSSamplerWidget::enableSettings()
     ui->BitNumBox->setEnabled(true);
     ui->ParityBox->setEnabled(true);
     ui->StopBox->setEnabled(true);
-    ui->sendButton->setEnabled(false);
+//    ui->sendButton->setEnabled(false);
 }
 
 void BSSamplerWidget::disableSettings()
@@ -393,7 +394,7 @@ void BSSamplerWidget::disableSettings()
     ui->BitNumBox->setEnabled(false);
     ui->ParityBox->setEnabled(false);
     ui->StopBox->setEnabled(false);
-    ui->sendButton->setEnabled(true);
+//    ui->sendButton->setEnabled(true);
 }
 
 void BSSamplerWidget::on_refreshButton_clicked()
@@ -409,8 +410,8 @@ void BSSamplerWidget::on_offsetcalButton_clicked()
 
 void BSSamplerWidget::on_stdweightcalButton_clicked()
 {
-    k_val=ui->stdweightEdit->text().toDouble() / (data_average()-offset_val);
-    qDebug() << QString("斜率校准成功！斜率: %1").arg(k_val, 0, 'f', 10);
+//    k_val=ui->stdweightEdit->text().toDouble() / (data_average()-offset_val);
+//    qDebug() << QString("斜率校准成功！斜率: %1").arg(k_val, 0, 'f', 10);
 }
 
 double BSSamplerWidget::data_average()
