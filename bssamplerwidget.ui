@@ -265,7 +265,7 @@
          <item>
           <widget class="QLabel" name="label_10">
            <property name="text">
-            <string>远程IP</string>
+            <string>远程:IP</string>
            </property>
            <property name="buddy">
             <cstring>StopBox</cstring>
@@ -282,11 +282,32 @@
         </layout>
        </item>
        <item>
+        <layout class="QHBoxLayout" name="horizontalLayout_28">
+         <item>
+          <widget class="QLabel" name="label_19">
+           <property name="text">
+            <string>子网掩码</string>
+           </property>
+           <property name="buddy">
+            <cstring>StopBox</cstring>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QLineEdit" name="remoteNetmaskEdit">
+           <property name="text">
+            <string>255.255.255.0</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item>
         <layout class="QHBoxLayout" name="horizontalLayout_15">
          <item>
           <widget class="QLabel" name="label_11">
            <property name="text">
-            <string>远程端口</string>
+            <string>端口</string>
            </property>
            <property name="buddy">
             <cstring>StopBox</cstring>
@@ -311,7 +332,7 @@
          <item>
           <widget class="QLabel" name="label_16">
            <property name="text">
-            <string>本地IP</string>
+            <string>本地:IP</string>
            </property>
            <property name="buddy">
             <cstring>StopBox</cstring>
@@ -328,11 +349,32 @@
         </layout>
        </item>
        <item>
+        <layout class="QHBoxLayout" name="horizontalLayout_29">
+         <item>
+          <widget class="QLabel" name="label_20">
+           <property name="text">
+            <string>子网掩码</string>
+           </property>
+           <property name="buddy">
+            <cstring>StopBox</cstring>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QLineEdit" name="localNetmaskEdit">
+           <property name="text">
+            <string>255.255.255.0</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item>
         <layout class="QHBoxLayout" name="horizontalLayout_18">
          <item>
           <widget class="QLabel" name="label_12">
            <property name="text">
-            <string>本地端口</string>
+            <string>端口</string>
            </property>
            <property name="buddy">
             <cstring>StopBox</cstring>
@@ -408,6 +450,30 @@ p, li { white-space: pre-wrap; }
         <widget class="QPushButton" name="configNetButton">
          <property name="text">
           <string>配置网络</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </item>
+     <item>
+      <layout class="QHBoxLayout" name="horizontalLayout_30">
+       <item>
+        <widget class="QLabel" name="label_6">
+         <property name="text">
+          <string>端口电平标准(&amp;L)</string>
+         </property>
+         <property name="buddy">
+          <cstring>PortBox</cstring>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QComboBox" name="serialModeBox">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
          </property>
         </widget>
        </item>

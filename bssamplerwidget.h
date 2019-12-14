@@ -56,7 +56,7 @@ private slots:
     void on_configVcpButton_clicked();
 
 private:
-    const static int MAX_CHNL_NUM = 4;
+    const static int MAX_CHNL_NUM = 10;
     Ui::BSSamplerWidget *ui;
     QSerialPort *serial;
     QClipboard *board;

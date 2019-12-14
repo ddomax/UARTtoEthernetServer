@@ -34,12 +34,16 @@ BSSamplerWidget::BSSamplerWidget(QWidget *parent) :
     ui->StopBox->insertItems(1,stopbits);
 
     QStringList channelindex;
-    channelindex<<"1"<<"2"<<"3"<<"4";
+    channelindex<<"1"<<"2"<<"3"<<"4"<<"5"<<"6"<<"7"<<"8"<<"9"<<"10";
     ui->channelBox->addItems(channelindex);
 
     QStringList opmodetext;
     opmodetext<<"TCPClient"<<"TCPServer"<<"UDP";
     ui->opmodeBox->addItems(opmodetext);
+
+    QStringList serialmodetext;
+    serialmodetext<<"RS232"<<"RS422"<<"RS485"<<"TTL";
+    ui->serialModeBox->addItems(serialmodetext);
 
     refresh_serialPorts();
     //设置波特率下拉菜单默认显示第三项
@@ -294,13 +298,24 @@ void BSSamplerWidget::on_channelBox_currentIndexChanged()
     if(relayChannelPool[activeChannelIndex]==NULL)
     {
         enableSettings();
+
         qDebug() << QString("Current channel is closed!No refresh is needed");
         return;
     }
     RelayChannel *m_relayChannel = relayChannelPool[activeChannelIndex];
     ui->PortBox->setCurrentIndex(m_relayChannel->chnlStatus.portBoxIndex);
+    ui->PortBox->setCurrentText(m_relayChannel->serial->portName());
+    ui->StopBox->setCurrentIndex(m_relayChannel->chnlStatus.StopBoxIndex);
+    ui->ParityBox->setCurrentIndex(m_relayChannel->chnlStatus.ParityBoxIndex);
     ui->BaudBox->setCurrentIndex(m_relayChannel->chnlStatus.BaudBoxIndex);
+    ui->serialModeBox->setCurrentIndex(m_relayChannel->chnlStatus.serialModeBoxIndex);
     ui->opmodeBox->setCurrentIndex(m_relayChannel->chnlStatus.currentOpmode);
+    ui->localAddressEdit->setText(m_relayChannel->chnlStatus.localAddress);
+    ui->remoteAddressEdit->setText(m_relayChannel->chnlStatus.remoteAddress);
+    ui->localPortEdit->setText(QString("%1").arg(m_relayChannel->chnlStatus.localPortNum));
+    ui->remotePortEdit->setText(QString("%1").arg(m_relayChannel->chnlStatus.remotePortNum));
+    ui->localNetmaskEdit->setText(m_relayChannel->chnlStatus.localNetmask);
+    ui->remoteNetmaskEdit->setText(m_relayChannel->chnlStatus.remoteNetmask);
     disableSettings();
 }
 
@@ -336,6 +351,7 @@ void BSSamplerWidget::on_openButton_clicked()
     case 0: m_relayChannel->serial->setParity(QSerialPort::NoParity); break;
     default: break;
     }
+    m_relayChannel->chnlStatus.ParityBoxIndex = ui->ParityBox->currentIndex();
     //设置停止位
     switch(ui->StopBox->currentIndex())
     {
@@ -343,14 +359,21 @@ void BSSamplerWidget::on_openButton_clicked()
     case 2: m_relayChannel->serial->setStopBits(QSerialPort::TwoStop); break;
     default: break;
     }
+    m_relayChannel->chnlStatus.StopBoxIndex = ui->StopBox->currentIndex();
     //设置流控制
     m_relayChannel->serial->setFlowControl(QSerialPort::NoFlowControl);
     //Set Ethernet protocol mode
     m_relayChannel->chnlStatus.currentOpmode = static_cast<MRelayChannel::opmode_t>(ui->opmodeBox->currentIndex());
     m_relayChannel->chnlStatus.remoteAddress = ui->remoteAddressEdit->text();
     m_relayChannel->chnlStatus.remotePortNum = ui->remotePortEdit->text().toInt();
+    m_relayChannel->chnlStatus.remoteNetmask = ui->remoteNetmaskEdit->text();
     m_relayChannel->chnlStatus.localAddress = ui->localAddressEdit->text();
     m_relayChannel->chnlStatus.localPortNum = ui->localPortEdit->text().toInt();
+    m_relayChannel->chnlStatus.localNetmask = ui->localNetmaskEdit->text();
+
+    //Set Serial Port Mode
+    m_relayChannel->chnlStatus.serialModeBoxIndex = ui->serialModeBox->currentIndex();
+
     //打开Channel
     m_relayChannel->openChannel();
     if(m_relayChannel->chnlStatus.currentLinkStatus == MRelayChannel::CLOSED)
@@ -383,6 +406,10 @@ void BSSamplerWidget::enableSettings()
     ui->BitNumBox->setEnabled(true);
     ui->ParityBox->setEnabled(true);
     ui->StopBox->setEnabled(true);
+    ui->serialModeBox->setEnabled(true);
+    ui->refreshButton->setEnabled(true);
+    ui->openButton->setEnabled(true);
+    ui->closeButton->setEnabled(false);
 //    ui->sendButton->setEnabled(false);
 }
 
@@ -394,6 +421,10 @@ void BSSamplerWidget::disableSettings()
     ui->BitNumBox->setEnabled(false);
     ui->ParityBox->setEnabled(false);
     ui->StopBox->setEnabled(false);
+    ui->serialModeBox->setEnabled(false);
+    ui->refreshButton->setEnabled(false);
+    ui->openButton->setEnabled(false);
+    ui->closeButton->setEnabled(true);
 //    ui->sendButton->setEnabled(true);
 }
 
@@ -663,7 +694,7 @@ void BSSamplerWidget::on_configNetButton_clicked()
 //    QString name = m_interface.humanReadableName();
     QString name = "以太网";
     QString ip = ui->localAddressEdit->text();
-    QString netmask = "255.255.255.0";
+    QString netmask = ui->localNetmaskEdit->text();
 
     QProcess cmd(this);
 

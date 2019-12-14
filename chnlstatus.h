@@ -19,12 +19,17 @@ public:
     MRelayChannel::linkstatus_t currentLinkStatus = MRelayChannel::CLOSED;
     QString localAddress;
     QString remoteAddress;
+    QString localNetmask;
+    QString remoteNetmask;
     int localPortNum;
     int remotePortNum;
     long long int recNum = 0;
 
     int portBoxIndex = 0;
     int BaudBoxIndex = 3;
+    int StopBoxIndex = 8;
+    int ParityBoxIndex = 0;
+    int serialModeBoxIndex = 0;
     
 };
 
