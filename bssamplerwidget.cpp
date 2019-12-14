@@ -1,6 +1,8 @@
 #include "bssamplerwidget.h"
 #include "ui_bssamplerwidget.h"
 #include "api/myhelper.h"
+#include<QtNetwork>
+//#include<iphlpapi.h>
 
 BSSamplerWidget::BSSamplerWidget(QWidget *parent) :
     QWidget(parent),
@@ -177,7 +179,7 @@ void BSSamplerWidget::setup_CustomPlot()
     ui->customPlot->yAxis->setRange(0, 60);
 
     ui->customPlot->xAxis->setLabel("时间（s）");
-    ui->customPlot->yAxis->setLabel("视重（kg）");
+    ui->customPlot->yAxis->setLabel("速率（Bytes/s）");
 
     ui->customPlot->xAxis->setLabelFont(QFont(QFont().family(), 12));
     ui->customPlot->yAxis->setLabelFont(QFont(QFont().family(), 12));
@@ -194,7 +196,7 @@ void BSSamplerWidget::setup_CustomPlot()
 
     // setup a timer that repeatedly calls MainWindow::realtimeDataSlot:
     connect(&dataTimer, SIGNAL(timeout()), this, SLOT(Read_Line()));
-    dataTimer.start(5); // Interval 0 means to refresh as fast as possible
+    dataTimer.start(20); // Interval 0 means to refresh as fast as possible
 }
 
 void BSSamplerWidget::refresh_serialPorts()
@@ -245,65 +247,29 @@ void BSSamplerWidget::Read_Data()
 
 void BSSamplerWidget::Read_Line()
 {
-    const int MAX_LEN = 64;
-    static int rec_num,tol_size = 0;
-    int size = 0;
-
-//    if(ui->openButton->text()==tr("打开串口"))
-//        return;
-//    if(serial->bytesAvailable()<10)
-//        return;
-//    QByteArray buf;
-//    buf = serial->readLine(MAX_LEN);
-
-    if(ui->openClientButton->text()==QString("打开客户端"))
-        return;
-    if(m_client->bytesAvailable()<10)
-        return;
-    QByteArray buf;
-    buf = m_client->readLine(MAX_LEN);
-
-    size = buf.size();
-    tol_size+=size;
-    buf.chop(2);
-//    qDebug() << buf;
-    if(buf.isEmpty()){
-        qDebug() << tr("Buffer is empty!");
+    RelayChannel* curChannel = relayChannelPool[activeChannelIndex];
+    if(curChannel==NULL)
+    {
         return;
     }
-    rec_num++;
-//    printf("Num:%3d Size:%2d Total:%8d Data:%8d\r\n",rec_num,size,tol_size,buf.toInt());
-
-
-    for(int i=0;i<RECORD_DATA_LEN;i++)
-        data_record[i] = data_record[i+1];
-    data_record[RECORD_DATA_LEN-1] = buf.toDouble();
-
-    static int points_count = 0;
+    static long long int lastRecNum = 0;
     static QTime time(QTime::currentTime());
     // calculate two new data points:
     double key = time.elapsed()/1000.0; // time elapsed since start of demo, in seconds
     static double lastPointKey = 0;
-//    if (key-lastPointKey > 0.002) // at most add point every 2 ms
-//    {
+    if (key-lastPointKey > 0.2) // at most add point every 2 ms
+    {
         // add data to lines:
-//        ui->customPlot->graph(0)->addData(key, 9.80665*(data_record[RECORD_DATA_LEN-1]-offset_val)*k_val);
-//        if(ui->customPlot->graph(0)->dataCount()==0)
-//            ui->customPlot->graph(0)->addData(key, 10);
-//        ui->customPlot->graph(0)->addData(key, 9.80665*(data_record[RECORD_DATA_LEN-1]-offset_val)*k_val);
-//        ui->customPlot->graph(0)->addData(key, 9.80665*(data_average()-offset_val)*k_val);
-        ui->customPlot->graph(0)->addData(points_count/80.0, 9.80665*(data_average()-offset_val)*k_val);
-//        ui->customPlot->graph(1)->addData(key, (data_record[RECORD_DATA_LEN-1]-offset_val)*k_val);
+        ui->customPlot->graph(0)->addData(key, (curChannel->chnlStatus.recNum-lastRecNum)/(key-lastPointKey));
         // rescale value (vertical) axis to fit the current data:
         ui->customPlot->graph(0)->rescaleValueAxis();
 //        ui->customPlot->graph(1)->rescaleValueAxis(true);
+        lastRecNum = curChannel->chnlStatus.recNum;
         lastPointKey = key;
-//    }
+    }
     // make key axis range scroll with the data (at a constant range size of 8):
-//    ui->customPlot->xAxis->setRange(key, 8, Qt::AlignRight);
-    ui->customPlot->xAxis->setRange(points_count/80.0, 8, Qt::AlignRight);
+    ui->customPlot->xAxis->setRange(key, 8, Qt::AlignRight);
     ui->customPlot->replot();
-    points_count++;
 
     // calculate frames per second:
     static double lastFpsKey;
@@ -311,16 +277,11 @@ void BSSamplerWidget::Read_Line()
     ++frameCount;
     if (key-lastFpsKey > 2) // average fps over 2 seconds
     {
-//      ui->statusBar->showMessage(
-//            QString("%1 FPS, Total Data points: %2")
-//            .arg(frameCount/(key-lastFpsKey), 0, 'f', 0)
-//            .arg(ui->customPlot->graph(0)->data()->size()+ui->customPlot->graph(1)->data()->size())
-//            , 0);
+
       qDebug() << QString("%1 FPS, Total Data points: %2, Buffer: %3")
                   .arg(frameCount/(key-lastFpsKey), 0, 'f', 1)
                   .arg(ui->customPlot->graph(0)->data()->size())
                   .arg(m_client->bytesAvailable());
-
       lastFpsKey = key;
       frameCount = 0;
     }
@@ -656,4 +617,142 @@ void BSSamplerWidget::printServerMessage()
     qDebug() << msg.toDouble();
 //    myHelper::showMessageBoxInfo(msg);
 //    QMessageBox::information(this,"来自服务端的消息",msg);
+}
+
+void BSSamplerWidget::initNetwork()
+{
+//    ui.comboBox->clear();
+
+    QString text;
+    QTextStream out(&text);
+    QList<QNetworkInterface> ifaceList = QNetworkInterface::allInterfaces();
+    for (int i = 0; i < ifaceList.count(); i++)
+    {
+        QNetworkInterface var = ifaceList.at(i);
+        if(var.humanReadableName() != QString("以太网"))
+        {
+            continue;
+        }
+        out << QString("########## 设备%1 ############").arg(i) << endl;
+        out << QString("接口名称：") << var.humanReadableName() << endl;
+        out << QString("设备名称：") << var.name() << endl;
+        out << QString("硬件地址：") << var.hardwareAddress() << endl;
+
+//        ui.comboBox->addItem(var.name());
+
+        out << QString("IP地址列表：") << endl;
+        // 读取一个IP地址的关联信息列表
+        QList<QNetworkAddressEntry> entryList = var.addressEntries();
+        for(int j = 0; j < entryList.count(); j++)
+        {
+            QNetworkAddressEntry entry = entryList.at(j);
+            out << QString("%1_地址：").arg(j) << endl;
+            out << QString(" IP地址：") << entry.ip().toString() << endl;
+            out << QString(" 子网掩码：") << entry.netmask().toString() << endl;
+            out << QString(" 广播地址：") << entry.broadcast().toString() << endl;
+        }
+    }
+
+    ui->networkEdit->setPlainText(text);
+}
+
+void BSSamplerWidget::on_configNetButton_clicked()
+{
+//    QNetworkInterface m_interface;
+//    QString name = m_interface.humanReadableName();
+    QString name = "以太网";
+    QString ip = ui->localAddressEdit->text();
+    QString netmask = "255.255.255.0";
+
+    QProcess cmd(this);
+
+    // netsh interface ipv4 set address name = "以太网" source = static
+    // address = 192.168.0.106 mask = 255.255.255.0 gateway = 192.168.0.1 gwmetric = 0
+    QString command = "netsh interface ipv4 set address name = "
+        + name + " source = static address = " + ip
+        + " mask = " + netmask;
+    qDebug() << command;
+    cmd.start(command);
+    cmd.waitForFinished();
+    QByteArray qbt = cmd.readAllStandardOutput();
+    QString msg = QString::fromLocal8Bit(qbt);
+    qDebug() << msg;
+    qDebug() << QString("Network configuration done!");
+}
+
+void BSSamplerWidget::on_readNetworkStatusButton_clicked()
+{
+    initNetwork();
+}
+
+void BSSamplerWidget::on_currentSideButton_clicked()
+{
+    if(ui->currentSideButton->text()==QString("打开服务器端配置界面"))
+    {
+        ui->currentSideButton->setText(QString("关闭服务器端配置界面"));
+        const QString path = "C:\\Windows\\System32\\mstsc.exe";
+        const QStringList argc = QStringList() << "C:\\Default.rdp" << "/v:" << ui->remoteAddressEdit->text();
+        linkMstsc(path,argc);
+    }
+    else
+    {
+        m_window->close();
+        m_widget->close();
+
+        ui->currentSideButton->setText(QString("打开服务器端配置界面"));
+    }
+
+
+}
+
+void BSSamplerWidget::linkMstsc(const QString path,const QStringList argc)
+{
+    //1、启动进程
+    QProcess *pProcess = new QProcess(this);
+    pProcess->start(path, argc);
+
+//    QWidget *m_widget = NULL;
+//    m_widget = new QWidget();
+//    m_widget->setGeometry(0,0,1024,768);
+//    m_widget->show();
+
+    //2、延时，这个很重要，一定要大于50
+//    Sleep(2000);
+
+//    //3、搜索匹配参数的窗口
+//    HWND childHwnd = FindWindow(L"TscShellContainerClass", NULL);
+
+
+//    //4、设置父窗口
+//    HWND parentHwnd = (HWND)m_widget->winId();
+//    SetParent(childHwnd, parentHwnd);
+
+//    //5、设置窗口位置
+//    SetWindowPos(childHwnd, HWND_TOP, 0, 0, 500, 500, SWP_FRAMECHANGED);
+//    Sleep(1000);
+    WId wid = 0;
+    while((WId)FindWindow(L"TscShellContainerClass", NULL)==0);
+    Sleep(500);
+    wid = (WId)FindWindow(L"TscShellContainerClass", NULL);
+//    QWindow *m_window;
+    m_window = QWindow::fromWinId(wid);
+    m_window->setFlags(m_window->flags() | Qt::CustomizeWindowHint | Qt::WindowTitleHint); //
+
+//    QWidget *m_widget;
+    m_widget = QWidget::createWindowContainer(m_window);
+    m_widget->setMinimumSize(1024, 768);
+    m_widget->setWindowFlags(Qt::WindowMinimizeButtonHint); //Qt::FramelessWindowHint | Qt::WindowSystemMenuHint | Qt::WindowMinimizeButtonHint
+    m_widget->setWindowTitle(QString("串口服务器端配置图形界面"));
+    m_widget->show();
+}
+
+void BSSamplerWidget::on_configVcpButton_clicked()
+{
+    QProcess process(this);
+    process.startDetached("D:\\VCP\\vspdconfig.exe");
+}
+
+void BSSamplerWidget::on_fullScreenButton_clicked()
+{
+    showFullScreen();
 }

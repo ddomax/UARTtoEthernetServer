@@ -103,6 +103,7 @@ void RelayChannel::networkToSerial()
         returnCnt = 0;
         if(m_udpsocket->bytesAvailable()>0)
         {
+            chnlStatus.recNum+=m_udpsocket->pendingDatagramSize(); //!
             //UDP Rx to local
             // when data comes in
             QByteArray dataBuf;
@@ -128,6 +129,7 @@ void RelayChannel::networkToSerial()
         returnCnt = 0;
         if(m_socket->bytesAvailable()>0)
         {
+            chnlStatus.recNum+=m_socket->bytesAvailable();
             QByteArray dataBuf = m_socket->readAll();
             serial->write(dataBuf);
         }
@@ -145,6 +147,7 @@ void RelayChannel::serialToNetwork()
     returnCnt = 0;
     if(serial->bytesAvailable()>0)
     {
+        chnlStatus.recNum+=serial->bytesAvailable();
         if(chnlStatus.currentOpmode==MRelayChannel::UDP)
         {
             //UDP TX to remote

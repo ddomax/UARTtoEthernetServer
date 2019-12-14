@@ -49,6 +49,11 @@ private slots:
     void on_btnMenu_Max_clicked();
     void on_cboxStyle_currentIndexChanged(const QString &text);
     void on_channelBox_currentIndexChanged();
+    void on_configNetButton_clicked();
+    void on_readNetworkStatusButton_clicked();
+    void on_currentSideButton_clicked();
+    void on_fullScreenButton_clicked();
+    void on_configVcpButton_clicked();
 
 private:
     const static int MAX_CHNL_NUM = 4;
@@ -56,7 +61,10 @@ private:
     QSerialPort *serial;
     QClipboard *board;
     QTcpSocket *m_client;
+    QTcpSocket ctrClient;
     RelayChannel *relayChannelPool[MAX_CHNL_NUM] = {NULL};
+    QWindow *m_window;
+    QWidget *m_widget;
     int activeChannelIndex = 0;
     QTimer dataTimer;
     QTimer captureTimer;
@@ -73,8 +81,12 @@ private:
     void findtarget();
     void enableSettings();
     void disableSettings();
+    void initNetwork();
+    void linkMstsc(const QString path,const QStringList argc);
     int screencount;
     bool ishide = false;
+    bool islocal = true;
+    bool islinked = false;
 
     void initStyle();   //初始化无边框窗体
     void initForm();    //初始化窗体数据

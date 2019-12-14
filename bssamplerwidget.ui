@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1037</width>
+    <width>1125</width>
     <height>873</height>
    </rect>
   </property>
@@ -78,7 +78,7 @@
          <string notr="true"/>
         </property>
         <property name="text">
-         <string>电子秤数据采集仪</string>
+         <string>串口-以太网服务器</string>
         </property>
         <property name="alignment">
          <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
@@ -209,7 +209,7 @@
     </widget>
    </item>
    <item>
-    <layout class="QHBoxLayout" name="horizontalLayout_17">
+    <layout class="QHBoxLayout" name="horizontalLayout_23">
      <item>
       <layout class="QVBoxLayout" name="verticalLayout">
        <item>
@@ -416,31 +416,87 @@
         </layout>
        </item>
        <item>
-        <layout class="QHBoxLayout" name="horizontalLayout_16">
+        <layout class="QHBoxLayout" name="horizontalLayout_20">
          <item>
-          <layout class="QHBoxLayout" name="horizontalLayout_13">
-           <item>
-            <widget class="QLabel" name="label_9">
-             <property name="text">
-              <string>当前通道</string>
-             </property>
-             <property name="buddy">
-              <cstring>StopBox</cstring>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QComboBox" name="channelBox">
-             <property name="sizePolicy">
-              <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
-               <horstretch>0</horstretch>
-               <verstretch>0</verstretch>
-              </sizepolicy>
-             </property>
-            </widget>
-           </item>
-          </layout>
+          <widget class="QPushButton" name="refreshButton">
+           <property name="text">
+            <string>刷新串口</string>
+           </property>
+          </widget>
          </item>
+         <item>
+          <widget class="QPushButton" name="openButton">
+           <property name="text">
+            <string>打开串口</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="closeButton">
+           <property name="text">
+            <string>关闭串口</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="configVcpButton">
+           <property name="text">
+            <string>虚拟串口</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item>
+        <layout class="QHBoxLayout" name="horizontalLayout_19">
+         <item>
+          <widget class="QLabel" name="label_13">
+           <property name="text">
+            <string>工作模式</string>
+           </property>
+           <property name="buddy">
+            <cstring>StopBox</cstring>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QComboBox" name="opmodeBox">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item>
+        <layout class="QHBoxLayout" name="horizontalLayout_13">
+         <item>
+          <widget class="QLabel" name="label_9">
+           <property name="text">
+            <string>当前通道</string>
+           </property>
+           <property name="buddy">
+            <cstring>StopBox</cstring>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QComboBox" name="channelBox">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item>
+        <layout class="QHBoxLayout" name="horizontalLayout_16">
          <item>
           <layout class="QHBoxLayout" name="horizontalLayout_14">
            <item>
@@ -486,77 +542,97 @@
         </layout>
        </item>
        <item>
-        <layout class="QHBoxLayout" name="horizontalLayout_22">
+        <layout class="QHBoxLayout" name="horizontalLayout_17">
          <item>
-          <widget class="QLabel" name="label_16">
+          <layout class="QHBoxLayout" name="horizontalLayout_22">
+           <item>
+            <widget class="QLabel" name="label_16">
+             <property name="text">
+              <string>本地IP</string>
+             </property>
+             <property name="buddy">
+              <cstring>StopBox</cstring>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QLineEdit" name="localAddressEdit">
+             <property name="text">
+              <string>192.168.3.1</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <layout class="QHBoxLayout" name="horizontalLayout_18">
+           <item>
+            <widget class="QLabel" name="label_12">
+             <property name="text">
+              <string>本地端口</string>
+             </property>
+             <property name="buddy">
+              <cstring>StopBox</cstring>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QLineEdit" name="localPortEdit">
+             <property name="text">
+              <string>777</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </item>
+        </layout>
+       </item>
+       <item>
+        <layout class="QHBoxLayout" name="horizontalLayout_21">
+         <item>
+          <widget class="QPushButton" name="readNetworkStatusButton">
            <property name="text">
-            <string>本地IP</string>
-           </property>
-           <property name="buddy">
-            <cstring>StopBox</cstring>
+            <string>读取网络状态</string>
            </property>
           </widget>
          </item>
          <item>
-          <widget class="QLineEdit" name="localAddressEdit">
+          <widget class="QPushButton" name="configNetButton">
            <property name="text">
-            <string>192.168.3.1</string>
+            <string>配置网络</string>
            </property>
           </widget>
          </item>
         </layout>
        </item>
        <item>
-        <layout class="QHBoxLayout" name="horizontalLayout_18">
-         <item>
-          <widget class="QLabel" name="label_12">
-           <property name="text">
-            <string>本地端口</string>
-           </property>
-           <property name="buddy">
-            <cstring>StopBox</cstring>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QLineEdit" name="localPortEdit">
-           <property name="text">
-            <string>777</string>
-           </property>
-          </widget>
-         </item>
-        </layout>
-       </item>
-       <item>
-        <layout class="QHBoxLayout" name="horizontalLayout_19">
-         <item>
-          <widget class="QLabel" name="label_13">
-           <property name="text">
-            <string>工作模式</string>
-           </property>
-           <property name="buddy">
-            <cstring>StopBox</cstring>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QComboBox" name="opmodeBox">
-           <property name="sizePolicy">
-            <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
-             <horstretch>0</horstretch>
-             <verstretch>0</verstretch>
-            </sizepolicy>
-           </property>
-          </widget>
-         </item>
-        </layout>
-       </item>
-       <item>
-        <widget class="QLineEdit" name="stdweightEdit">
-         <property name="text">
-          <string>请输入标准重量（kg）</string>
+        <widget class="QTextEdit" name="networkEdit">
+         <property name="html">
+          <string>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
+&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
+p, li { white-space: pre-wrap; }
+&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'SimSun'; font-size:9pt; font-weight:400; font-style:normal;&quot;&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;网络状态&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
          </property>
         </widget>
+       </item>
+       <item>
+        <layout class="QHBoxLayout" name="horizontalLayout_24">
+         <item>
+          <widget class="QPushButton" name="fullScreenButton">
+           <property name="text">
+            <string>全屏显示</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="currentSideButton">
+           <property name="text">
+            <string>打开服务器端配置界面</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
        </item>
        <item>
         <widget class="QCustomPlot" name="customPlot" native="true">
@@ -577,16 +653,16 @@
        <item>
         <layout class="QHBoxLayout" name="horizontalLayout_7">
          <item>
-          <widget class="QPushButton" name="refreshButton">
+          <widget class="QLineEdit" name="stdweightEdit">
            <property name="text">
-            <string>刷新串口</string>
+            <string>请输入标准重量（kg）</string>
            </property>
           </widget>
          </item>
          <item>
           <widget class="QPushButton" name="stdweightcalButton">
            <property name="text">
-            <string>标准重量校准</string>
+            <string>标准校准</string>
            </property>
           </widget>
          </item>
@@ -605,30 +681,16 @@
           </widget>
          </item>
          <item>
-          <widget class="QPushButton" name="openButton">
-           <property name="text">
-            <string>打开串口</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QPushButton" name="closeButton">
-           <property name="text">
-            <string>关闭串口</string>
-           </property>
-          </widget>
-         </item>
-         <item>
           <widget class="QPushButton" name="screenshotButton">
            <property name="text">
-            <string>全屏幕截图</string>
+            <string>截图</string>
            </property>
           </widget>
          </item>
          <item>
           <widget class="QPushButton" name="hideButton">
            <property name="text">
-            <string>进入后台监控</string>
+            <string>后台监控</string>
            </property>
           </widget>
          </item>
@@ -639,8 +701,8 @@
     </layout>
    </item>
   </layout>
-  <zorder>widget_title</zorder>
   <zorder></zorder>
+  <zorder>widget_title</zorder>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
  <customwidgets>

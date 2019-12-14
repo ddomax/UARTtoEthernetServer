@@ -21,6 +21,7 @@ public:
     QString remoteAddress;
     int localPortNum;
     int remotePortNum;
+    long long int recNum = 0;
 
     int portBoxIndex = 0;
     int BaudBoxIndex = 3;
